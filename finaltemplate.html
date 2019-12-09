@@ -9,14 +9,14 @@
 
     {% for item in members %}
 	    <h3> Name: {{item}} </h3>
-        <p> Date of Birth: {{item['dob']}}</p>
-	    <p> Party: {{item.party}} </p>
-        <p> Gender: {{item.gender}}</p>
-        <p> Member ID: {{item.id}}</p>
-        <p> State: {{item.state}}</p>
-        <p> Rank: {{item.rank}}</p>
-        <p> Percentage of Votes with Party: {{item.withparty_pct}}%</p>
-        <p> Percentage of Votes Against Party: {{item.againstparty_pct}}%</p>
+        <p> Date of Birth: {{members[item]['dob']}}</p>
+	    <p> Party: {{members[item]['party']}} </p>
+        <p> Gender: {{members[item]['gender']}}</p>
+        <p> Member ID: {{members[item]['id']}}</p>
+        <p> State: {{members[item]['state']}}</p>
+        <p> Rank: {{members[item]['rank']}}</p>
+        <p> Percentage of Votes with Party: {{members[item]['withparty_pct']}}%</p>
+        <p> Percentage of Votes Against Party: {{members[item]['againstparty_pct']}}%</p>
     {% endfor %}
 
 	<form action="/" method="post" id="memeberinput">
@@ -34,6 +34,15 @@
 	<input type="text" id="chamber" name="chamber" />
 		<button type="submit" value="Search">Submit</button>
 	</form>
+
+	<h3> Member searched is {{member}} </h3>
+<!--	{% for item in data %}-->
+<!--	    <h3> Search Results for: {{item}} </h3>-->
+<!--        <p> Date of Birth: {{data[item]['dob']}}</p>-->
+<!--	    <p> Party: {{data[item]['party']}} </p>-->
+<!--        <p> Gender: {{data[item]['gender']}}</p>-->
+<!--        <p> Member ID: {{data[item]['id']}}</p>-->
+<!--    {% endfor %}-->
 
 
 </body>

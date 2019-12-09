@@ -1,6 +1,7 @@
 import webapp2, os, urllib2, urllib, json
 import jinja2
 import logging
+logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO)
 
 JINJA_ENVIRONMENT = jinja2.Environment(loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
     extensions=['jinja2.ext.autoescape'],
@@ -39,8 +40,16 @@ def memberAPI(baseurl='https://api.propublica.org/congress/v1/',
         data = json.load(result)
         return data
 
-
-print(memberAPI())
+def searchMember(baseurl='https://api.propublica.org/congress/v1/',
+    memberid=None
+    ):
+    url = baseurl + '/members/' + str(memberid) + '.json'
+    req = urllib2.Request(url=url, headers={"X-API-Key": apikey})
+    result = safeGet(req)
+    if result is not None:
+        data = json.load(result)
+        return data
+# print(memberAPI())
 
 
 def memberparse(dict):
@@ -66,6 +75,22 @@ def memberparse(dict):
     return templatevals
 
 
+def specificparse(dictionary, id):
+    templatevals = {}
+    for item in dictionary[0]['results'][0]:
+        first = item['first_name']
+        last = item['last_name']
+        templatevals[first + ' ' + last] = {}
+        templatevals[first + ' ' + last]['id'] = id
+        templatevals[first + ' ' + last]['dob'] = item['date_of_birth']
+        templatevals[first + ' ' + last]['gender'] = item['gender']
+        templatevals[first + ' ' + last]['inoffice'] = item['in_office']
+        templatevals[first + ' ' + last]['party'] = item['current_party']
+        templatevals[first + ' ' + last]['congress'] = item['roles'][0]['congress']
+    return templatevals
+
+
+
 class Member():
     def __init__(self, item):
         self.name = item['first_name'] + ' ' + item['last_name']
@@ -84,23 +109,31 @@ class Member():
         self.id = item['id']
 
 
-# list = memberAPI()
-# memberdict = memberparse(list)
-# print(memberdict)
+def findID(member):
+    list = memberAPI()
+    members = memberparse(list)
+    memberid = ''
+    for item in members:
+        if item == member:
+            memberid = item['id']
 
-# print(pretty(list['results'][0]['members']))
+    return memberid
 
 
 class MainHandler(webapp2.RequestHandler):
-    def genpage(self, member= None):
+    def genpage(self, member=None):
         templatevals = {}
         if member is not None:
-           pass
+            templatevals['member'] = member
+            # id = findID(member)
+            # print(id)
+            # data = searchMember(id)
+            # findata = specificparse(data, id)
+            # templatevals['data'] = findata
+            templatevals['title'] = 'Search Results'
         else:
             list = memberAPI()
-            # memberobject = [Member(item) for item in list[0][0]['members']]
             templatevals['members'] = memberparse(list)
-            templatevals['title'] = 'Search Results'
             templatevals['membernum'] = list['results'][0]['num_results']
 
         template = JINJA_ENVIRONMENT.get_template('finaltemplate.html')
@@ -110,8 +143,11 @@ class MainHandler(webapp2.RequestHandler):
         self.genpage()
 
     def post(self):
-        member = self.request.get('member')
-        self.genpage(member)
+        member = self.request.get('memberinput')
+        logging.warning(member)
+        if member is not None:
+            self.genpage(member)
+
         # congress = self.request.get('congress')
         # self.genpage(congress)
         # chamber = self.request.get('chamber')
