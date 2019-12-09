@@ -1,0 +1,34 @@
+<html>
+<head><title> {{title}} </title>
+	<title> {{page_title}}</title>
+</head>
+<body>
+	<form action="/" method="post" id="keywordinput">
+	<label for="keyword">Please enter a tag name:</label>
+	<input type="text" id="keyword" name="keyword" />
+		<button type="submit" value="go">Submit</button>
+	</form>
+	<h1> Top 3 Viewed Images </h1>
+	{% for item in views %}
+	    <h2> Author: {{item.author}} </h2>
+	    <img src="{{item.thumbnailURL}} alt="{{item.title}}""/>
+	    <p> Views: {{item.numViews}} </p>
+	{% endfor %}
+
+	<h1> Top 3 Most Tagged Images </h1>
+    {% for item in tags %}
+	    <h2> Author: {{item.author}} </h2>
+	    <img src="{{item.thumbnailURL}} alt="{{item.title}}"/>
+	{% endfor %}
+
+	<h1> Top 3 Most Commented Images </h1>
+    {% for item in comments %}
+	    <h2> Author: {{item.author}} </h2>
+	    <img src="{{item.thumbnailURL}} alt="{{item.title}}"/>
+	    <p> Number of Comments: {{item.commentcount}} </p>
+	{% endfor %}
+
+
+
+</body>
+</html>

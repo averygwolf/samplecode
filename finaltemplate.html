@@ -1,0 +1,40 @@
+<html>
+<head><title> {{title}} </title>
+	<title> {{page_title}}</title>
+</head>
+<body>
+
+    <h1> Members of Congress </h1>
+    <h2> Number of Members: {{membernum}}</h2>
+
+    {% for item in members %}
+	    <h3> Name: {{item}} </h3>
+        <p> Date of Birth: {{item['dob']}}</p>
+	    <p> Party: {{item.party}} </p>
+        <p> Gender: {{item.gender}}</p>
+        <p> Member ID: {{item.id}}</p>
+        <p> State: {{item.state}}</p>
+        <p> Rank: {{item.rank}}</p>
+        <p> Percentage of Votes with Party: {{item.withparty_pct}}%</p>
+        <p> Percentage of Votes Against Party: {{item.againstparty_pct}}%</p>
+    {% endfor %}
+
+	<form action="/" method="post" id="memeberinput">
+	<label for="member">Please enter a name to search for a congress member</label>
+	<input type="text" id="member" name="member" />
+	</form>
+
+    <form action="/" method="post" id="congressinput">
+	<label for="congress">Please enter which Congress to search (102-116 for House, 80-116 for Senate):</label>
+	<input type="text" id="congress" name="congress" />
+	</form>
+
+    <form action="/" method="post" id="chamberinput">
+	<label for="chamber">Please enter a chamber type (House or Senate):</label>
+	<input type="text" id="chamber" name="chamber" />
+		<button type="submit" value="Search">Submit</button>
+	</form>
+
+
+</body>
+</html>
