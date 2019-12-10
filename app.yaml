@@ -5,6 +5,8 @@ threadsafe: true
 handlers:
 - url: /
   script: mainfinal.application
+- url: /assets
+  static_dir: /assets
 
 libraries:
 - name: webapp2

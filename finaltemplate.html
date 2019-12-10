@@ -1,12 +1,28 @@
 <html>
-<head><title> {{title}} </title>
+<head>
+	<title> {{title}} </title>
 	<title> {{page_title}}</title>
+<!--	<link rel="stylesheet" type="text/css" href="styles.css">-->
 </head>
-<body>
+<body style="margin: 1in">
 
-    <h1> Members of Congress </h1>
-    <h2> Number of Members: {{membernum}}</h2>
+    <h1 style="text-align: center"> {{title1}} </h1>
 
+    	<br />
+	<form style="text-align: center" action="/" method="post" id="memberinput">
+	<label for="member">Please enter a name to search for a congress member</label>
+	<input type="text" id="member" name="member" />
+		<button type="submit" value="search" name="search">Submit</button>
+	</form>
+    <br />
+	<form style="text-align: center" action="/" method="post" id="home">
+	<label for="home">Go back to congress member list</label>
+		<button type="submit" value="home" name="home">Home</button>
+	</form>
+
+    <br />
+
+    <h2 style="text-align: center"> {{title2}} {{membernum}}</h2>
     {% for item in members %}
 	    <h3> Name: {{item}} </h3>
         <p> Date of Birth: {{members[item]['dob']}}</p>
@@ -15,34 +31,35 @@
         <p> Member ID: {{members[item]['id']}}</p>
         <p> State: {{members[item]['state']}}</p>
         <p> Rank: {{members[item]['rank']}}</p>
-        <p> Percentage of Votes with Party: {{members[item]['withparty_pct']}}%</p>
-        <p> Percentage of Votes Against Party: {{members[item]['againstparty_pct']}}%</p>
+        <p style="border: solid darkgreen; border-radius: 5px; background-color: darkgreen; color: white"
+        > Percentage of Votes with Party: {{members[item]['withparty_pct']}}%</p>
+        <p style="border: solid darkred; border-radius: 5px; background-color: darkred; color: white"
+        > Percentage of Votes Against Party: {{members[item]['againstparty_pct']}}%</p>
     {% endfor %}
 
-	<form action="/" method="post" id="memeberinput">
-	<label for="member">Please enter a name to search for a congress member</label>
-	<input type="text" id="member" name="member" />
-	</form>
 
-    <form action="/" method="post" id="congressinput">
-	<label for="congress">Please enter which Congress to search (102-116 for House, 80-116 for Senate):</label>
-	<input type="text" id="congress" name="congress" />
-	</form>
+<!--    <form action="/" method="post" id="congressinput">-->
+<!--	<label for="congress">Please enter which Congress to search (102-116 for House, 80-116 for Senate):</label>-->
+<!--	<input type="text" id="congress" name="congress" />-->
+<!--	</form>-->
 
-    <form action="/" method="post" id="chamberinput">
-	<label for="chamber">Please enter a chamber type (House or Senate):</label>
-	<input type="text" id="chamber" name="chamber" />
-		<button type="submit" value="Search">Submit</button>
-	</form>
+<!--    <form action="/" method="post" id="chamberinput">-->
+<!--	<label for="chamber">Please enter a chamber type (House or Senate):</label>-->
+<!--	<input type="text" id="chamber" name="chamber" />-->
+<!--		<button type="submit" value="Search">Submit</button>-->
+<!--	</form>-->
 
-	<h3> Member searched is {{member}} </h3>
-<!--	{% for item in data %}-->
-<!--	    <h3> Search Results for: {{item}} </h3>-->
-<!--        <p> Date of Birth: {{data[item]['dob']}}</p>-->
-<!--	    <p> Party: {{data[item]['party']}} </p>-->
-<!--        <p> Gender: {{data[item]['gender']}}</p>-->
-<!--        <p> Member ID: {{data[item]['id']}}</p>-->
-<!--    {% endfor %}-->
+	<h2 style="text-align: center"> {{message}} </h2>
+	{% for item in data %}
+	    <h3 style="text-align: center"> Search Results for: {{item}} </h3>
+        <p> Date of Birth: {{data[item]['dob']}}</p>
+	    <p> Party: {{data[item]['party']}} </p>
+        <p> Gender: {{data[item]['gender']}}</p>
+        <p> Member ID: {{data[item]['id']}}</p>
+		<p> In Office: {{data[item]['inoffice']}}</p>
+		<p> Congress: {{data[item]['congress']}}</p>
+
+    {% endfor %}
 
 
 </body>

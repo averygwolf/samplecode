@@ -40,16 +40,14 @@ def memberAPI(baseurl='https://api.propublica.org/congress/v1/',
         data = json.load(result)
         return data
 
-def searchMember(baseurl='https://api.propublica.org/congress/v1/',
-    memberid=None
-    ):
+# "https://api.propublica.org/congress/v1/members/K000388.json"
+def searchMember(memberid, baseurl='https://api.propublica.org/congress/v1/'):
     url = baseurl + '/members/' + str(memberid) + '.json'
     req = urllib2.Request(url=url, headers={"X-API-Key": apikey})
     result = safeGet(req)
     if result is not None:
         data = json.load(result)
         return data
-# print(memberAPI())
 
 
 def memberparse(dict):
@@ -71,13 +69,12 @@ def memberparse(dict):
         templatevals[first + ' ' + last]['inoffice'] = item['in_office']
         templatevals[first + ' ' + last]['nextelection'] = item['next_election']
         templatevals[first + ' ' + last]['id'] = item['id']
-
     return templatevals
 
 
 def specificparse(dictionary, id):
     templatevals = {}
-    for item in dictionary[0]['results'][0]:
+    for item in dictionary['results']:
         first = item['first_name']
         last = item['last_name']
         templatevals[first + ' ' + last] = {}
@@ -90,33 +87,40 @@ def specificparse(dictionary, id):
     return templatevals
 
 
-
-class Member():
-    def __init__(self, item):
-        self.name = item['first_name'] + ' ' + item['last_name']
-        self.dob = item['date_of_birth']
-        self.gender = item['gender']
-        self.state = item['state']
-        self.rank = item['state_rank']
-        self.title = item['title']
-        self.vpresent = item['total_present']
-        self.totalvotes = item['total_votes']
-        self.withparty_pct = item['votes_with_party_pct']
-        self.againstparty_pct = item['votes_against_party_pct']
-        self.party = item['party']
-        self.inoffice = item['in_office']
-        self.nextelection = item['next_election']
-        self.id = item['id']
+#
+# class Member():
+#     def __init__(self, item):
+#         self.name = item['first_name'] + ' ' + item['last_name']
+#         self.dob = item['date_of_birth']
+#         self.gender = item['gender']
+#         self.state = item['state']
+#         self.rank = item['state_rank']
+#         self.title = item['title']
+#         self.vpresent = item['total_present']
+#         self.totalvotes = item['total_votes']
+#         self.withparty_pct = item['votes_with_party_pct']
+#         self.againstparty_pct = item['votes_against_party_pct']
+#         self.party = item['party']
+#         self.inoffice = item['in_office']
+#         self.nextelection = item['next_election']
+#         self.id = item['id']
 
 
 def findID(member):
     list = memberAPI()
     members = memberparse(list)
-    memberid = ''
+    memberid = None
+    splitit = member.split()
+    mfirst = splitit[0]
+    mlast = splitit[1]
+    logging.warning(mfirst)
     for item in members:
-        if item == member:
-            memberid = item['id']
-
+        split = item.split()
+        firstname = split[0]
+        lastname = split[1]
+        if firstname == mfirst and lastname == mlast:
+            memberid = members[item]['id']
+            return memberid
     return memberid
 
 
@@ -124,17 +128,22 @@ class MainHandler(webapp2.RequestHandler):
     def genpage(self, member=None):
         templatevals = {}
         if member is not None:
-            templatevals['member'] = member
-            # id = findID(member)
-            # print(id)
-            # data = searchMember(id)
-            # findata = specificparse(data, id)
-            # templatevals['data'] = findata
-            templatevals['title'] = 'Search Results'
+            id = findID(member)
+            if id is not None:
+                data = searchMember(id)
+                findata = specificparse(data, id)
+                templatevals['member'] = member
+                templatevals['data'] = findata
+                templatevals['title'] = 'Search Results'
+                templatevals['message'] = 'Here is what we found'
+            else:
+                templatevals['message'] = 'Please enter a valid member'
         else:
             list = memberAPI()
             templatevals['members'] = memberparse(list)
             templatevals['membernum'] = list['results'][0]['num_results']
+            templatevals['title1'] = 'Members of Congress'
+            templatevals['title2'] = 'Number of Members: '
 
         template = JINJA_ENVIRONMENT.get_template('finaltemplate.html')
         self.response.write(template.render(templatevals))
@@ -143,10 +152,12 @@ class MainHandler(webapp2.RequestHandler):
         self.genpage()
 
     def post(self):
-        member = self.request.get('memberinput')
-        logging.warning(member)
-        if member is not None:
-            self.genpage(member)
+        if self.request.get['member'] == 'search':
+            member = self.request.get('member')
+            if member is not None:
+                self.genpage(member)
+        elif self.request.get['home'] == 'home':
+            self.genpage()
 
         # congress = self.request.get('congress')
         # self.genpage(congress)
