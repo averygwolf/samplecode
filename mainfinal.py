@@ -149,10 +149,10 @@ def findID(member):
 class MainHandler(webapp2.RequestHandler):
     def genpage(self, member=None):
         templatevals = {}
+
         if member is not None:
             id = findID(member)
             if id is not None:
-                currmemid = id
                 data = searchMember(id)
                 findata = specificparse(data, id)
                 templatevals['member'] = member
@@ -178,8 +178,10 @@ class MainHandler(webapp2.RequestHandler):
             member2 = findID(compare2)
             data = compareMembers(member1, member2)
             logging.warning(data)
-            templatevals['data'] = compareparse(data, member1, member2)
-            templatevals['message'] = 'Here is what we found'
+            newdata = compareparse(data, compare1, compare2)
+            logging.warning(newdata)
+            templatevals['data1'] = newdata
+            templatevals['message1'] = 'Here is what we found'
 
         template = JINJA_ENVIRONMENT.get_template('finaltemplate.html')
         self.response.write(template.render(templatevals))
@@ -193,6 +195,8 @@ class MainHandler(webapp2.RequestHandler):
             if member is not None:
                 self.genpage(member)
         elif self.request.get('home') == 'home':
+            logging.warning('tried to go home')
+            logging.warning(self.request.get('home'))
             self.genpage()
         elif self.request.get('compare') == 'compare':
             comparemem = self.request.get('membersearch')
