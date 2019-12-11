@@ -40,9 +40,20 @@ def memberAPI(baseurl='https://api.propublica.org/congress/v1/',
         data = json.load(result)
         return data
 
+
 # "https://api.propublica.org/congress/v1/members/K000388.json"
 def searchMember(memberid, baseurl='https://api.propublica.org/congress/v1/'):
     url = baseurl + '/members/' + str(memberid) + '.json'
+    req = urllib2.Request(url=url, headers={"X-API-Key": apikey})
+    result = safeGet(req)
+    if result is not None:
+        data = json.load(result)
+        return data
+
+
+#   https://api.propublica.org/congress/v1/members/{first-member-id}/votes/{second-member-id}/{congress}/{chamber}.json
+def compareMembers(mem1, mem2, baseurl='https://api.propublica.org/congress/v1/members/'):
+    url = baseurl + mem1 + '/votes/' + mem2 + '/116/senate'
     req = urllib2.Request(url=url, headers={"X-API-Key": apikey})
     result = safeGet(req)
     if result is not None:
@@ -86,7 +97,17 @@ def specificparse(dictionary, id):
         templatevals[first + ' ' + last]['congress'] = item['roles'][0]['congress']
     return templatevals
 
-
+def compareparse(dictionary, mem1, mem2):
+    data = {}
+    logging.warning(dictionary)
+    data['firstmem'] = mem1
+    data['secondmem'] = mem2
+    data['commonvotes'] = dictionary['results'][0]['common_votes']
+    data['disagree'] = dictionary['results'][0]['disagree_votes']
+    data['agree_pct'] = dictionary['results'][0]['agree_percent']
+    data['disagree_pct'] = dictionary['results'][0]['disagree_percent']
+    logging.warning(data)
+    return data
 #
 # class Member():
 #     def __init__(self, item):
@@ -124,17 +145,19 @@ def findID(member):
     return memberid
 
 
+
 class MainHandler(webapp2.RequestHandler):
     def genpage(self, member=None):
         templatevals = {}
         if member is not None:
             id = findID(member)
             if id is not None:
+                currmemid = id
                 data = searchMember(id)
                 findata = specificparse(data, id)
                 templatevals['member'] = member
                 templatevals['data'] = findata
-                templatevals['title'] = 'Search Results'
+                templatevals['title1'] = 'Search Results'
                 templatevals['message'] = 'Here is what we found'
             else:
                 templatevals['message'] = 'Please enter a valid member'
@@ -148,21 +171,34 @@ class MainHandler(webapp2.RequestHandler):
         template = JINJA_ENVIRONMENT.get_template('finaltemplate.html')
         self.response.write(template.render(templatevals))
 
+    def compare(self, compare1=None, compare2=None):
+        templatevals = {}
+        if compare1 is not None and compare2 is not None:
+            member1 = findID(compare1)
+            member2 = findID(compare2)
+            data = compareMembers(member1, member2)
+            logging.warning(data)
+            templatevals['data'] = compareparse(data, member1, member2)
+            templatevals['message'] = 'Here is what we found'
+
+        template = JINJA_ENVIRONMENT.get_template('finaltemplate.html')
+        self.response.write(template.render(templatevals))
+
     def get(self):
         self.genpage()
 
     def post(self):
-        if self.request.get['member'] == 'search':
+        if self.request.get('search') == 'search':
             member = self.request.get('member')
             if member is not None:
                 self.genpage(member)
-        elif self.request.get['home'] == 'home':
+        elif self.request.get('home') == 'home':
             self.genpage()
-
-        # congress = self.request.get('congress')
-        # self.genpage(congress)
-        # chamber = self.request.get('chamber')
-        # self.genpage(chamber)
+        elif self.request.get('compare') == 'compare':
+            comparemem = self.request.get('membersearch')
+            compareme2 = self.request.get('membersearch2')
+            if comparemem is not None and compareme2 is not None:
+                self.compare(comparemem, compareme2)
 
 
 application = webapp2.WSGIApplication([('/', MainHandler)], debug=True)

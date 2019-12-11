@@ -2,7 +2,6 @@
 <head>
 	<title> {{title}} </title>
 	<title> {{page_title}}</title>
-<!--	<link rel="stylesheet" type="text/css" href="styles.css">-->
 </head>
 <body style="margin: 1in">
 
@@ -10,14 +9,27 @@
 
     	<br />
 	<form style="text-align: center" action="/" method="post" id="memberinput">
-	<label for="member">Please enter a name to search for a congress member</label>
+	<label for="member">Please enter a name to search for a congress member (first last):</label>
 	<input type="text" id="member" name="member" />
 		<button type="submit" value="search" name="search">Submit</button>
 	</form>
+
     <br />
+
 	<form style="text-align: center" action="/" method="post" id="home">
 	<label for="home">Go back to congress member list</label>
 		<button type="submit" value="home" name="home">Home</button>
+	</form>
+
+    <br />
+
+    <form style="text-align: center" action="/" method="post" id="member2input">
+	<label for="membersearch">Search for two members to compare: </label><br />
+        <label for="membersearch">First member:</label>
+	<input type="text" id="membersearch" name="membersearch" /><br />
+        <label for="membersearch2">Second member:</label>
+    <input type="text" id="membersearch2" name="membersearch2" />
+		<button type="submit" value="compare" name="compare">Submit</button>
 	</form>
 
     <br />
@@ -35,19 +47,9 @@
         > Percentage of Votes with Party: {{members[item]['withparty_pct']}}%</p>
         <p style="border: solid darkred; border-radius: 5px; background-color: darkred; color: white"
         > Percentage of Votes Against Party: {{members[item]['againstparty_pct']}}%</p>
+        <br />
     {% endfor %}
 
-
-<!--    <form action="/" method="post" id="congressinput">-->
-<!--	<label for="congress">Please enter which Congress to search (102-116 for House, 80-116 for Senate):</label>-->
-<!--	<input type="text" id="congress" name="congress" />-->
-<!--	</form>-->
-
-<!--    <form action="/" method="post" id="chamberinput">-->
-<!--	<label for="chamber">Please enter a chamber type (House or Senate):</label>-->
-<!--	<input type="text" id="chamber" name="chamber" />-->
-<!--		<button type="submit" value="Search">Submit</button>-->
-<!--	</form>-->
 
 	<h2 style="text-align: center"> {{message}} </h2>
 	{% for item in data %}
@@ -58,8 +60,20 @@
         <p> Member ID: {{data[item]['id']}}</p>
 		<p> In Office: {{data[item]['inoffice']}}</p>
 		<p> Congress: {{data[item]['congress']}}</p>
-
     {% endfor %}
+
+    <br />
+
+<h2 style="text-align: center"> {{message}} for {{data['firstmem']}} and {{data['secondmem']}}</h2>
+        <p> Common Votes: {{data['commonvotes']}}</p>
+	    <p> Disagree Votes {{data['disagree]}} </p>
+        <p> Agree Percentage: {{data['agree_pct']}}%</p>
+        <p> Disagree Percentage {{data['disagree_pct']}}%</p>
+
+    <br />
+
+
+
 
 
 </body>
