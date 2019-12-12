@@ -1,3 +1,7 @@
+# Avery Wolf
+# HCDE 310 Final Project
+# API: ProPublica
+
 import webapp2, os, urllib2, urllib, json
 import jinja2
 import logging
@@ -7,15 +11,9 @@ JINJA_ENVIRONMENT = jinja2.Environment(loader=jinja2.FileSystemLoader(os.path.di
     extensions=['jinja2.ext.autoescape'],
     autoescape=True)
 
-
-### Utility functions you may want to use
-def pretty(obj):
-    return json.dumps(obj, sort_keys=True, indent=2)
-
-
 apikey = '5BRInQ6lktfdklvFQWYwehr5hTKgkezIS0nDxHRn'
 
-
+# method used to get data from the API and return an error if something goes wrong
 def safeGet(url):
     try:
         return urllib2.urlopen(url)
@@ -28,11 +26,11 @@ def safeGet(url):
     return None
 
 
-# "https://api.propublica.org/congress/v1/116/senate/members.json"
-def memberAPI(baseurl='https://api.propublica.org/congress/v1/',
-    congress='116',
-    chamber='senate',
-    ):
+# method will return data of all the members of the 116th congress from the API
+# whole URL will look like: "https://api.propublica.org/congress/v1/116/senate/members.json"
+def memberAPI(baseurl='https://api.propublica.org/congress/v1/'):
+    congress = '116'
+    chamber = 'senate'
     url = baseurl + congress + '/' + chamber + '/members.json'
     req = urllib2.Request(url=url, headers={"X-API-Key": apikey})
     result = safeGet(req)
@@ -41,7 +39,9 @@ def memberAPI(baseurl='https://api.propublica.org/congress/v1/',
         return data
 
 
-# "https://api.propublica.org/congress/v1/members/K000388.json"
+# method will return data from the API about a specific member
+# memberid:  a series of 7 numbers or letters corresponding to a specific member of congress
+# whole URL will look like: "https://api.propublica.org/congress/v1/members/K000388.json"
 def searchMember(memberid, baseurl='https://api.propublica.org/congress/v1/'):
     url = baseurl + '/members/' + str(memberid) + '.json'
     req = urllib2.Request(url=url, headers={"X-API-Key": apikey})
@@ -50,8 +50,10 @@ def searchMember(memberid, baseurl='https://api.propublica.org/congress/v1/'):
         data = json.load(result)
         return data
 
-
-#   https://api.propublica.org/congress/v1/members/{first-member-id}/votes/{second-member-id}/{congress}/{chamber}.json
+# method will return data about two members of congress and their overlapping agreements/disagreements
+# mem1: (member id) a series of 7 numbers or letters corresponding to a specific member of congress
+# mem2: (member id) a series of 7 numbers or letters corresponding to a specific member of congress
+# whole URL will look like: https://api.propublica.org/congress/v1/members/{first-member-id}/votes/{second-member-id}/{congress}/{chamber}.json
 def compareMembers(mem1, mem2, baseurl='https://api.propublica.org/congress/v1/members/'):
     url = baseurl + mem1 + '/votes/' + mem2 + '/116/senate'
     req = urllib2.Request(url=url, headers={"X-API-Key": apikey})
@@ -61,6 +63,7 @@ def compareMembers(mem1, mem2, baseurl='https://api.propublica.org/congress/v1/m
         return data
 
 
+# method will return a data about a recent vote's information (title, description, verdict) and the roll call
 # "https://api.propublica.org/congress/v1/115/senate/sessions/1/votes/17.json"
 def recentVotes(url='https://api.propublica.org/congress/v1/116/senate/sessions/1/votes/100.json'):
     req = urllib2.Request(url=url, headers={"X-API-Key": apikey})
@@ -70,9 +73,12 @@ def recentVotes(url='https://api.propublica.org/congress/v1/116/senate/sessions/
         return data
 
 
+# method will parse through a dictionary about recent vote info and return specific data that's relevant to a specific
+# member of congress. Information from this method will be shown when users compare two members or search for a member
+# dictionary: recent vote dictionary
+# mem: name that the information will pertain to
 def getvoteinfo(dictionary, mem):
     info = None
-    logging.warning(dictionary['results']['votes']['vote']['positions'])
     for item in dictionary['results']['votes']['vote']['positions']:
         if item['name'] == mem:
             info = {}
@@ -87,11 +93,11 @@ def getvoteinfo(dictionary, mem):
             info['repup'] = dictionary['results']['votes']['vote']['republican']['majority_position']
             info['memposition'] = item['vote_position']
             info['name'] = item['name']
-            logging.warning(info)
-    logging.warning(info)
     return info
 
 
+# method parses through a dictionary and creates and returns a dictionary of relevant information
+# dict: dictionary of all member information
 def memberparse(dict):
     templatevals = {}
     for item in dict['results'][0]['members']:
@@ -114,6 +120,10 @@ def memberparse(dict):
     return templatevals
 
 
+# method will parse through a dictionary and create and return a dictionary of relevant information pertaining to a
+# specific member a user has searched
+# dictionary: dictionary of specific member information
+# id: member id for searched member
 def specificparse(dictionary, id):
     templatevals = {}
     for item in dictionary['results']:
@@ -128,18 +138,25 @@ def specificparse(dictionary, id):
         templatevals[first + ' ' + last]['congress'] = item['roles'][0]['congress']
     return templatevals
 
+
+# method will parse information from a dictionary and create and return a dictionary with relevant information pertaining
+# to two specific members and their overlap
+# dictionary: dictionary of specific member information
+# mem1: first member the user searched for
+# mem2: second member the user searched for
 def compareparse(dictionary, mem1, mem2):
     data = {}
-    logging.warning(dictionary)
     data['firstmem'] = mem1
     data['secondmem'] = mem2
     data['commonvotes'] = dictionary['results'][0]['common_votes']
     data['disagree'] = dictionary['results'][0]['disagree_votes']
     data['agree_pct'] = dictionary['results'][0]['agree_percent']
     data['disagree_pct'] = dictionary['results'][0]['disagree_percent']
-    logging.warning(data)
     return data
 
+
+# method will use the name that a user has input and return that members id
+# member: the congress member's name the user has searched for
 def findID(member):
     list = memberAPI()
     members = memberparse(list)
@@ -147,7 +164,6 @@ def findID(member):
     splitit = member.split()
     mfirst = splitit[0]
     mlast = splitit[1]
-    logging.warning(mfirst)
     for item in members:
         split = item.split()
         firstname = split[0]
@@ -157,15 +173,14 @@ def findID(member):
             return memberid
     return memberid
 
-
-
+# class will handle all output and use of Jinja
 class MainHandler(webapp2.RequestHandler):
+    # method used for producing entire member list or specific member information when member is not None
     def genpage(self, member=None, voteinfo=None):
         templatevals = {}
         if member is not None:
             id = findID(member)
             if id is not None:
-                logging.warning(voteinfo)
                 if voteinfo is not None:
                     templatevals['voteinfo'] = voteinfo
                 data = searchMember(id)
@@ -175,28 +190,31 @@ class MainHandler(webapp2.RequestHandler):
                 templatevals['title1'] = 'Search Results'
                 templatevals['message'] = 'Here is what we found'
             else:
+                templatevals['title1'] = 'Member of Congress'
                 templatevals['message'] = 'Please enter a valid member'
+                templatevals['subtitle'] = 'Welcome to your congress member resource! Take a look at the current congressmen and women of the 116th congress of the United States. Search a specific member, compare two members, or simply take a look at them all!'
         else:
             list = memberAPI()
             templatevals['members'] = memberparse(list)
             templatevals['membernum'] = list['results'][0]['num_results']
+            templatevals['subtitle'] = 'Welcome to your congress member resource! Take a look at the current congressmen and women of the 116th congress of the United States. Search a specific member, compare two members, or simply take a look at them all!'
             templatevals['title1'] = 'Members of Congress'
             templatevals['title2'] = 'Number of Members: '
 
         template = JINJA_ENVIRONMENT.get_template('finaltemplate.html')
         self.response.write(template.render(templatevals))
 
+    # method used when a user wants to compare two members
     def compare(self, compare1=None, compare2=None, vote1=None, vote2=None):
         templatevals = {}
         if compare1 is not None and compare2 is not None:
             member1 = findID(compare1)
             member2 = findID(compare2)
             data = compareMembers(member1, member2)
-            logging.warning(data)
             newdata = compareparse(data, compare1, compare2)
-            logging.warning(newdata)
             templatevals['data1'] = newdata
             templatevals['message1'] = 'Here is what we found'
+            templatevals['title1'] = 'Search Results'
             if vote1 is not None and vote2 is not None:
                 templatevals['comparevoteinfo1'] = vote1
                 templatevals['comparevoteinfo2'] = vote2
@@ -207,6 +225,7 @@ class MainHandler(webapp2.RequestHandler):
     def get(self):
         self.genpage()
 
+    # receives user input and stores it and sends it to necessary methods, and then to necessary handlers
     def post(self):
         if self.request.get('search') == 'search':
             member = self.request.get('member')
@@ -215,7 +234,8 @@ class MainHandler(webapp2.RequestHandler):
                 voteinfo = getvoteinfo(data, member)
                 if voteinfo is not None:
                     self.genpage(member, voteinfo)
-                self.genpage(member)
+                else:
+                    self.genpage(member)
         elif self.request.get('home') == 'home':
             self.genpage()
         elif self.request.get('compare') == 'compare':
@@ -227,7 +247,8 @@ class MainHandler(webapp2.RequestHandler):
                 mem2info = getvoteinfo(data, compareme2)
                 if mem1info is not None and mem2info is not None:
                     self.compare(comparemem, compareme2, mem1info, mem2info)
-                self.compare(comparemem, compareme2)
+                else:
+                    self.compare(comparemem, compareme2)
 
 
 application = webapp2.WSGIApplication([('/', MainHandler)], debug=True)

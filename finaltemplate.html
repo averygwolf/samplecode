@@ -1,39 +1,41 @@
 <html>
 <head>
-	<title> {{title}} </title>
-	<title> {{page_title}}</title>
+	<title> Congress Search </title>
 </head>
-<body style="margin: 1in">
+<body style="margin: 1in; background-color: #D7E2EF; font-family: 'Roboto Thin', Times, serif">
 
     <h1 style="text-align: center"> {{title1}} </h1>
+    <br />
+    {% if subtitle%}
+    <p style="text-align: center"> {{subtitle}}</p>
+    {% endif %}
+    <br />
+	<form style="text-align: left" action="/" method="post" id="home">
+	<label style="font-weight: bold" for="home">Go back to full congress member list</label>
+        <button style="background-color: #2364AA; color: white; border-radius: 8px; width: 7%; border: none"
+                type="submit" value="home" name="home">Home</button>
+	</form>
 
-    	<br />
-	<form style="text-align: center" action="/" method="post" id="memberinput">
-	<label for="member">Please enter a name to search for a congress member (first last):</label>
+    <br />
+	<form style="text-align: left" action="/" method="post" id="memberinput">
+	<label style="font-weight: bold" for="member">Please enter a name to search for a congress member (First Last):</label>
 	<input type="text" id="member" name="member" />
-		<button type="submit" value="search" name="search">Submit</button>
+		<button style="border-radius: 8px; background-color: #2364AA; color: white; width: 7%; border: none"
+                type="submit" value="search" name="search">Search</button>
 	</form>
 
     <br />
-
-	<form style="text-align: center" action="/" method="post" id="home">
-	<label for="home">Go back to congress member list</label>
-		<button type="submit" value="home" name="home">Home</button>
-	</form>
-
-    <br />
-
-    <form style="text-align: center" action="/" method="post" id="member2input">
-	<label for="membersearch">Search for two members to compare: </label><br />
-        <label for="membersearch">First member:</label>
+    <form style="text-align: left" action="/" method="post" id="member2input">
+	<label style="font-weight: bold" for="membersearch">Search for two members to compare: </label><br />
+        <label for="membersearch">First member (First Last):</label>
 	<input type="text" id="membersearch" name="membersearch" /><br />
-        <label for="membersearch2">Second member:</label>
-    <input type="text" id="membersearch2" name="membersearch2" />
-		<button type="submit" value="compare" name="compare">Submit</button>
+        <label for="membersearch2">Second member (First Last):</label>
+    <input type="text" id="membersearch2" name="membersearch2" /> <br />
+		<button style="border-radius: 8px; background-color: #2364AA; color: white; width: 7%; border: none"
+                type="submit" value="compare" name="compare">Search</button>
 	</form>
 
     <br />
-
     {% if members %}
     <h2 style="text-align: center"> {{title2}} {{membernum}}</h2>
     {% for item in members %}
@@ -44,6 +46,9 @@
         <p> Member ID: {{members[item]['id']}}</p>
         <p> State: {{members[item]['state']}}</p>
         <p> Rank: {{members[item]['rank']}}</p>
+        <p> Next Election: {{members[item]['nextelection']}}</p>
+        <p> In Office: {{members[item]['inoffice']}}</p>
+        <p> Total Votes: {{members[item]['totalvotes']}}</p>
         <p style="border: solid darkgreen; border-radius: 5px; background-color: darkgreen; color: white"
         > Percentage of Votes with Party: {{members[item]['withparty_pct']}}%</p>
         <p style="border: solid darkred; border-radius: 5px; background-color: darkred; color: white"
@@ -52,8 +57,10 @@
     {% endfor %}
     {% endif%}
 
-    {% if data %}
+
+    {% if message %}
 	<h2 style="text-align: center"> {{message}} </h2>
+    {% if data %}
 	{% for item in data %}
 	    <h3 style="text-align: center"> Search Results for: {{item}} </h3>
         <p> Date of Birth: {{data[item]['dob']}}</p>
@@ -64,9 +71,9 @@
 		<p> Congress: {{data[item]['congress']}}</p>
     {% endfor %}
     {% endif %}
+    {% endif %}
 
     <br />
-
     {% if data1 %}
     <h2 style="text-align: center"> {{message1}} for {{data1['firstmem']}} and {{data1['secondmem']}}</h2>
         <p> Common Votes: {{data1['commonvotes']}}</p>
@@ -75,6 +82,47 @@
         > Agree Percentage: {{data1['agree_pct']}}%</p>
         <p style="border: solid darkred; border-radius: 5px; background-color: darkred; color: white"
         > Disagree Percentage: {{data1['disagree_pct']}}%</p>
+    {% endif %}
+
+    <br />
+    {% if comparevoteinfo1%}
+    <h2 style="text-align: center"> Here is a recent vote that {{comparevoteinfo1['name']}} was a part of:</h2>
+        {% if comparevoteinfo1['billid'] %}
+            <p>Bill Id: {{comparevoteinfo1['billid']}}</p>
+        {% endif %}
+        {% if comparevoteinfo1['billtitle'] %}
+            <p>Bill Title: {{comparevoteinfo1['billtitle']}}</p>
+        {% endif %}
+        <p> Description of Bill: {{comparevoteinfo1['description']}}</p>
+        {% if comparevoteinfo1['latestaction'] %}
+            <p>Latest Action: {{comparevoteinfo1['latestaction']}}</p>
+        {% endif %}
+        <p> Date: {{comparevoteinfo1['date']}}</p>
+        <p> Democratic Majority Vote: {{comparevoteinfo1['demup']}}</p>
+        <p> Republican Majority Vote: {{comparevoteinfo1['repup']}}</p>
+        <p> {{comparevoteinfo1['name']}}'s Vote: {{comparevoteinfo1['memposition']}}</p>
+        <p> Final Result: {{comparevoteinfo1['result']}}</p>
+    {% endif %}
+
+
+    <br />
+    {% if comparevoteinfo2%}
+    <h2 style="text-align: center"> Here is a recent vote that {{comparevoteinfo2['name']}} was a part of:</h2>
+        {% if comparevoteinfo2['billid'] %}
+            <p>Bill Id: {{comparevoteinfo2['billid']}}</p>
+        {% endif %}
+        {% if comparevoteinfo2['billtitle'] %}
+            <p>Bill Title: {{comparevoteinfo2['billtitle']}}</p>
+        {% endif %}
+        <p> Description of Bill: {{comparevoteinfo2['description']}}</p>
+        {% if comparevoteinfo2['latestaction'] %}
+            <p>Latest Action: {{comparevoteinfo2['latestaction']}}</p>
+        {% endif %}
+        <p> Date: {{comparevoteinfo2['date']}}</p>
+        <p> Democratic Majority Vote: {{comparevoteinfo2['demup']}}</p>
+        <p> Republican Majority Vote: {{comparevoteinfo2['repup']}}</p>
+        <p> {{comparevoteinfo2['name']}}'s Vote: {{comparevoteinfo2['memposition']}}</p>
+        <p> Final Result: {{comparevoteinfo2['result']}}</p>
     {% endif %}
 
     {% if voteinfo%}
